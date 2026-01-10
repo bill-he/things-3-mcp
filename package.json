@@ -1,0 +1,30 @@
+{
+  "name": "things3-mcp",
+  "version": "1.0.0",
+  "description": "MCP server for Things3 task management",
+  "type": "module",
+  "main": "build/index.js",
+  "bin": {
+    "things3-mcp": "build/index.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsx src/index.ts",
+    "start": "node build/index.js",
+    "prepare": "npm run build"
+  },
+  "keywords": ["mcp", "things3", "todo", "task-management"],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.25.2",
+    "better-sqlite3": "^12.6.0",
+    "zod": "^4.3.5"
+  },
+  "devDependencies": {
+    "@types/better-sqlite3": "^7.6.13",
+    "@types/node": "^25.0.6",
+    "tsx": "^4.21.0",
+    "typescript": "^5.9.3"
+  }
+}
