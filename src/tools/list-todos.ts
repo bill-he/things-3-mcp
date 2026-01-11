@@ -3,13 +3,13 @@ import { getTasksByFilter } from '../database.js';
 
 export const listTodosTool = {
   name: 'list_todos',
-  description: 'List todos from Things3. Can filter by list type (all, today, upcoming, inbox, anytime, someday) and optionally include completed tasks.',
+  description: 'List todos from Things3. Can filter by list type (all, today, tomorrow, upcoming, inbox, anytime, someday) and optionally include completed tasks.',
   inputSchema: {
     type: 'object',
     properties: {
       filter: {
         type: 'string',
-        enum: ['all', 'today', 'upcoming', 'inbox', 'anytime', 'someday'],
+        enum: ['all', 'today', 'tomorrow', 'upcoming', 'inbox', 'anytime', 'someday'],
         description: 'Filter tasks by list',
         default: 'all'
       },

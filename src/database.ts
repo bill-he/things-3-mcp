@@ -117,14 +117,29 @@ function rowToTask(row: any): Things3Task {
     type: row.type,
     creationDate: row.creationDate,
     modificationDate: row.userModificationDate,
-    dueDate: convertThings3Date(row.deadline),
+
+    // Scheduling fields
+    start: row.start,
     startDate: convertThings3Date(row.startDate),
-    stopDate: row.stopDate,
+    startBucket: row.startBucket,
     todayIndex: row.todayIndex,
+    todayIndexReferenceDate: row.todayIndexReferenceDate,
+    dueDate: convertThings3Date(row.deadline),
+    stopDate: row.stopDate,
+
+    // Organization
     area: row.area,
     areaTitle: row.areaTitle,
     project: row.project,
     projectTitle: row.projectTitle,
+    heading: row.heading,
+
+    // Index and counts
+    index: row.index,
+    checklistItemsCount: row.checklistItemsCount,
+    openChecklistItemsCount: row.openChecklistItemsCount,
+
+    // Related data
     tags,
     checklistItems
   };
@@ -144,9 +159,16 @@ export function getAllTasks(includeCompleted: boolean = false): Things3Task[] {
       t.creationDate,
       t.userModificationDate,
       t.deadline,
+      t.start,
       t.startDate,
-      t.stopDate,
+      t.startBucket,
       t.todayIndex,
+      t.todayIndexReferenceDate,
+      t.stopDate,
+      t.heading,
+      t."index",
+      t.checklistItemsCount,
+      t.openChecklistItemsCount,
       t.area,
       a.title as areaTitle,
       t.project,
@@ -179,16 +201,28 @@ export function getTasksByFilter(filter: string, includeCompleted: boolean = fal
 
   switch (filter) {
     case 'today':
-      whereClause += ` AND (t.todayIndex IS NOT NULL OR t.startDate IS NOT NULL)`;
+      whereClause += ` AND t.start = 1`;
+      break;
+    case 'tomorrow':
+      whereClause += ` AND t.start = 2`;
+      // Filter to only tomorrow (not later dates)
+      const tomorrow = new Date();
+      tomorrow.setDate(tomorrow.getDate() + 1);
+      tomorrow.setHours(0, 0, 0, 0);
+      const tomorrowValue = dateToThings3Format(tomorrow);
+      const dayAfter = new Date(tomorrow);
+      dayAfter.setDate(dayAfter.getDate() + 1);
+      const dayAfterValue = dateToThings3Format(dayAfter);
+      whereClause += ` AND t.startDate >= ${tomorrowValue} AND t.startDate < ${dayAfterValue}`;
       break;
     case 'upcoming':
-      whereClause += ` AND t.startDate IS NOT NULL`;
+      whereClause += ` AND t.start = 2`;
       break;
     case 'inbox':
       whereClause += ` AND t.area IS NULL AND t.project IS NULL`;
       break;
     case 'anytime':
-      whereClause += ` AND t.todayIndex IS NULL AND t.startDate IS NULL`;
+      whereClause += ` AND t.start = 0`;
       break;
     case 'someday':
       whereClause += ` AND t.status = ${TaskStatus.INCOMPLETE} AND t.area = (SELECT uuid FROM TMArea WHERE title = 'Someday')`;
@@ -205,9 +239,16 @@ export function getTasksByFilter(filter: string, includeCompleted: boolean = fal
       t.creationDate,
       t.userModificationDate,
       t.deadline,
+      t.start,
       t.startDate,
-      t.stopDate,
+      t.startBucket,
       t.todayIndex,
+      t.todayIndexReferenceDate,
+      t.stopDate,
+      t.heading,
+      t.\`index\`,
+      t.checklistItemsCount,
+      t.openChecklistItemsCount,
       t.area,
       a.title as areaTitle,
       t.project,
@@ -249,9 +290,16 @@ export function searchTasks(query: string, searchIn: 'title' | 'notes' | 'both' 
       t.creationDate,
       t.userModificationDate,
       t.deadline,
+      t.start,
       t.startDate,
-      t.stopDate,
+      t.startBucket,
       t.todayIndex,
+      t.todayIndexReferenceDate,
+      t.stopDate,
+      t.heading,
+      t."index",
+      t.checklistItemsCount,
+      t.openChecklistItemsCount,
       t.area,
       a.title as areaTitle,
       t.project,
@@ -284,9 +332,16 @@ export function getTaskById(uuid: string): Things3Task | null {
       t.creationDate,
       t.userModificationDate,
       t.deadline,
+      t.start,
       t.startDate,
-      t.stopDate,
+      t.startBucket,
       t.todayIndex,
+      t.todayIndexReferenceDate,
+      t.stopDate,
+      t.heading,
+      t."index",
+      t.checklistItemsCount,
+      t.openChecklistItemsCount,
       t.area,
       a.title as areaTitle,
       t.project,
@@ -444,9 +499,16 @@ export function getTomorrowTasks(): Things3Task[] {
       t.creationDate,
       t.userModificationDate,
       t.deadline,
+      t.start,
       t.startDate,
-      t.stopDate,
+      t.startBucket,
       t.todayIndex,
+      t.todayIndexReferenceDate,
+      t.stopDate,
+      t.heading,
+      t."index",
+      t.checklistItemsCount,
+      t.openChecklistItemsCount,
       t.area,
       a.title as areaTitle,
       t.project,
@@ -457,9 +519,10 @@ export function getTomorrowTasks(): Things3Task[] {
     WHERE t.trashed = 0
       AND t.type = ${TaskType.TODO}
       AND t.status = ${TaskStatus.INCOMPLETE}
+      AND t.start = 2
       AND t.startDate >= ${tomorrowStartValue}
       AND t.startDate < ${tomorrowEndValue}
-    ORDER BY t.startDate, t.creationDate DESC
+    ORDER BY t.todayIndex, t.creationDate DESC
   `;
 
   const rows = db.prepare(query).all() as any[];
