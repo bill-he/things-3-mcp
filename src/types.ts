@@ -23,14 +23,29 @@ export interface Things3Task {
   type: TaskType;
   creationDate: number | null;
   modificationDate: number | null;
-  dueDate: number | null;
+
+  // Scheduling fields
+  start: number; // 0=none, 1=today, 2=upcoming
   startDate: number | null;
-  stopDate: number | null;
+  startBucket: number | null;
   todayIndex: number | null;
+  todayIndexReferenceDate: number | null;
+  dueDate: number | null;
+  stopDate: number | null;
+
+  // Organization
   area: string | null;
   areaTitle: string | null;
   project: string | null;
   projectTitle: string | null;
+  heading: string | null;
+
+  // Index and counts
+  index: number | null;
+  checklistItemsCount: number | null;
+  openChecklistItemsCount: number | null;
+
+  // Related data
   tags: string[];
   checklistItems: ChecklistItem[];
 }
@@ -70,7 +85,7 @@ export const CreateTodoSchema = z.object({
 });
 
 export const ListTodosSchema = z.object({
-  filter: z.enum(['all', 'today', 'upcoming', 'inbox', 'anytime', 'someday']).optional().default('all').describe('Filter tasks by list'),
+  filter: z.enum(['all', 'today', 'tomorrow', 'upcoming', 'inbox', 'anytime', 'someday']).optional().default('all').describe('Filter tasks by list'),
   includeCompleted: z.boolean().optional().default(false).describe('Include completed tasks')
 });
 

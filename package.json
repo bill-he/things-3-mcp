@@ -13,7 +13,12 @@
     "start": "node build/index.js",
     "prepare": "npm run build"
   },
-  "keywords": ["mcp", "things3", "todo", "task-management"],
+  "keywords": [
+    "mcp",
+    "things3",
+    "todo",
+    "task-management"
+  ],
   "author": "",
   "license": "MIT",
   "dependencies": {
@@ -24,6 +29,7 @@
   "devDependencies": {
     "@types/better-sqlite3": "^7.6.13",
     "@types/node": "^25.0.6",
+    "ts-node": "^10.9.2",
     "tsx": "^4.21.0",
     "typescript": "^5.9.3"
   }
