@@ -491,6 +491,59 @@ export function getTasksForDate(date: Date, includeCompleted: boolean = false): 
   return rows.map(rowToTask);
 }
 
+// Get tasks for a date range (inclusive)
+export function getTasksForRange(startDate: Date, endDate: Date, includeCompleted: boolean = false): Things3Task[] {
+  const db = getDatabase();
+  const startOfRange = new Date(startDate);
+  startOfRange.setHours(0, 0, 0, 0);
+  const endOfRange = new Date(endDate);
+  endOfRange.setHours(0, 0, 0, 0);
+
+  const dayAfterEnd = new Date(endOfRange);
+  dayAfterEnd.setDate(dayAfterEnd.getDate() + 1);
+
+  const startValue = dateToThings3Format(startOfRange);
+  const endValue = dateToThings3Format(dayAfterEnd);
+
+  let statusClause = '';
+  if (!includeCompleted) {
+    statusClause = ` AND t.status = ${TaskStatus.INCOMPLETE}`;
+  }
+
+  const query = `
+    SELECT
+      t.uuid,
+      t.title,
+      t.notes,
+      t.status,
+      t.type,
+      t.creationDate,
+      t.userModificationDate,
+      t.deadline,
+      t.startDate,
+      t.stopDate,
+      t.todayIndex,
+      t.area,
+      a.title as areaTitle,
+      t.project,
+      p.title as projectTitle
+    FROM TMTask t
+    LEFT JOIN TMArea a ON t.area = a.uuid
+    LEFT JOIN TMTask p ON t.project = p.uuid
+    WHERE t.trashed = 0
+      AND t.type = ${TaskType.TODO}
+      ${statusClause}
+      AND (
+        (t.startDate >= ? AND t.startDate < ?)
+        OR (t.todayIndexReferenceDate >= ? AND t.todayIndexReferenceDate < ?)
+      )
+    ORDER BY t.todayIndex, t.startDate, t.creationDate DESC
+  `;
+
+  const rows = db.prepare(query).all(startValue, endValue, startValue, endValue) as any[];
+  return rows.map(rowToTask);
+}
+
 // Get tasks for tomorrow
 export function getTomorrowTasks(): Things3Task[] {
   const db = getDatabase();

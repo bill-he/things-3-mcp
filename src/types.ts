@@ -114,6 +114,11 @@ export const ListDateTodosSchema = z.object({
   date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Expected YYYY-MM-DD').describe('Date in YYYY-MM-DD format'),
   includeCompleted: z.boolean().optional().default(false).describe('Include completed tasks')
 });
+export const ListRangeTodosSchema = z.object({
+  startDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Expected YYYY-MM-DD').describe('Start date in YYYY-MM-DD format'),
+  endDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Expected YYYY-MM-DD').describe('End date in YYYY-MM-DD format (inclusive)'),
+  includeCompleted: z.boolean().optional().default(false).describe('Include completed tasks')
+});
 
 // Type exports for tool inputs
 export type CreateTodoInput = z.infer<typeof CreateTodoSchema>;
@@ -125,3 +130,4 @@ export type CompleteTodoInput = z.infer<typeof CompleteTodoSchema>;
 export type ListProjectsInput = z.infer<typeof ListProjectsSchema>;
 export type ListTagsInput = z.infer<typeof ListTagsSchema>;
 export type ListDateTodosInput = z.infer<typeof ListDateTodosSchema>;
+export type ListRangeTodosInput = z.infer<typeof ListRangeTodosSchema>;

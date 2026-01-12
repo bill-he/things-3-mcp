@@ -220,7 +220,25 @@ List todos scheduled for a specific date.
 }
 ```
 
-### 8. `list_projects`
+### 8. `list_range_todos`
+
+List todos scheduled within a date range (inclusive).
+
+**Parameters:**
+- `startDate` (required): Start date in YYYY-MM-DD format
+- `endDate` (required): End date in YYYY-MM-DD format (inclusive)
+- `includeCompleted` (optional): Include completed tasks (default: false)
+
+**Example:**
+```json
+{
+  "startDate": "2026-01-08",
+  "endDate": "2026-01-14",
+  "includeCompleted": false
+}
+```
+
+### 9. `list_projects`
 
 List all projects and areas.
 
@@ -234,7 +252,7 @@ List all projects and areas.
 }
 ```
 
-### 9. `list_tags`
+### 10. `list_tags`
 
 List all tags.
 
