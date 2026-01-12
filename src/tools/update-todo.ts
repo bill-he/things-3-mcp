@@ -21,8 +21,7 @@ export const updateTodoTool = {
       },
       when: {
         type: 'string',
-        enum: ['today', 'tomorrow', 'evening', 'anytime', 'someday'],
-        description: 'When to schedule'
+        description: 'When to schedule (use "today", "tomorrow", "evening", "anytime", "someday", or a specific date in YYYY-MM-DD format)'
       },
       deadline: {
         type: 'string',

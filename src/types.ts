@@ -60,7 +60,10 @@ export interface ChecklistItem {
 export const CreateTodoSchema = z.object({
   title: z.string().describe('The title of the todo'),
   notes: z.string().optional().describe('Notes or description for the todo'),
-  when: z.enum(['today', 'tomorrow', 'evening', 'anytime', 'someday']).optional().describe('When to schedule the todo'),
+  when: z.union([
+    z.enum(['today', 'tomorrow', 'evening', 'anytime', 'someday']),
+    z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Expected YYYY-MM-DD format')
+  ]).optional().describe('When to schedule the todo (use "today", "tomorrow", "evening", "anytime", "someday", or a specific date in YYYY-MM-DD format)'),
   deadline: z.string().optional().describe('Deadline date in YYYY-MM-DD format'),
   tags: z.array(z.string()).optional().describe('Array of tag names'),
   checklistItems: z.array(z.string()).optional().describe('Array of checklist item titles'),
@@ -87,7 +90,10 @@ export const UpdateTodoSchema = z.object({
   taskId: z.string().describe('UUID of the task to update'),
   title: z.string().optional().describe('New title'),
   notes: z.string().optional().describe('New notes'),
-  when: z.enum(['today', 'tomorrow', 'evening', 'anytime', 'someday']).optional().describe('When to schedule'),
+  when: z.union([
+    z.enum(['today', 'tomorrow', 'evening', 'anytime', 'someday']),
+    z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Expected YYYY-MM-DD format')
+  ]).optional().describe('When to schedule (use "today", "tomorrow", "evening", "anytime", "someday", or a specific date in YYYY-MM-DD format)'),
   deadline: z.string().optional().describe('Deadline date in YYYY-MM-DD format'),
   tags: z.array(z.string()).optional().describe('Array of tag names (replaces existing)'),
   addTags: z.array(z.string()).optional().describe('Array of tag names to add'),
