@@ -11,6 +11,7 @@ import {
 import { createTodoTool, handleCreateTodo } from './tools/create-todo.js';
 import { listTodosTool, handleListTodos } from './tools/list-todos.js';
 import { listTomorrowTool, handleListTomorrow } from './tools/list-tomorrow.js';
+import { listDateTodosTool, handleListDateTodos } from './tools/list-date.js';
 import { searchTodosTool, handleSearchTodos } from './tools/search-todos.js';
 import { getTodoTool, handleGetTodo } from './tools/get-todo.js';
 import { updateTodoTool, handleUpdateTodo } from './tools/update-todo.js';
@@ -30,6 +31,7 @@ const tools = [
   createTodoTool,
   listTodosTool,
   listTomorrowTool,
+  listDateTodosTool,
   searchTodosTool,
   getTodoTool,
   updateTodoTool,
@@ -43,6 +45,7 @@ const toolHandlers: Record<string, (params: any) => Promise<string>> = {
   create_todo: handleCreateTodo,
   list_todos: handleListTodos,
   list_tomorrow_todos: handleListTomorrow,
+  list_date_todos: handleListDateTodos,
   search_todos: handleSearchTodos,
   get_todo: handleGetTodo,
   update_todo: handleUpdateTodo,

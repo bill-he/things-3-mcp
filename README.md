@@ -204,7 +204,23 @@ Mark a todo as completed.
 }
 ```
 
-### 7. `list_projects`
+### 7. `list_date_todos`
+
+List todos scheduled for a specific date.
+
+**Parameters:**
+- `date` (required): Date in YYYY-MM-DD format
+- `includeCompleted` (optional): Include completed tasks (default: false)
+
+**Example:**
+```json
+{
+  "date": "2025-01-12",
+  "includeCompleted": false
+}
+```
+
+### 8. `list_projects`
 
 List all projects and areas.
 
@@ -218,7 +234,7 @@ List all projects and areas.
 }
 ```
 
-### 8. `list_tags`
+### 9. `list_tags`
 
 List all tags.
 
@@ -269,9 +285,11 @@ To test the server manually:
 
 The server uses Things3's URL scheme for write operations. Key URL formats:
 
-- **Add**: `things:///add?title=...&notes=...&when=...`
-- **Update**: `things:///update?id=...&title=...`
-- **Show**: `things:///show?id=...`
+- **Add**: `things:///add?title=...&notes=...&when=...&auth-token=...`
+- **Update**: `things:///update?id=...&title=...&auth-token=...`
+- **Show**: `things:///show?id=...&auth-token=...`
+
+**Authentication**: All URL scheme operations require an authentication token. The token is automatically included by the server and is retrieved from Things3's database (`TMSettings.uriSchemeAuthenticationToken`). The token is hardcoded in `src/urlScheme.ts`.
 
 See [Things3 URL Scheme documentation](https://culturedcode.com/things/support/articles/2803573/) for more details.
 

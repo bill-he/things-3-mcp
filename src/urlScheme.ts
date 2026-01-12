@@ -5,6 +5,9 @@ import { findProjectByName, findTagByName } from './database.js';
 
 const execAsync = promisify(exec);
 
+// Things3 authentication token (from database TMSettings table)
+const AUTH_TOKEN = '_zHFvh-uS12aQ2EfDRnOyg';
+
 // Encode parameter for URL
 function encodeParam(value: string): string {
   return encodeURIComponent(value);
@@ -77,6 +80,9 @@ export async function createTodo(params: CreateTodoInput): Promise<string> {
   // Reveal the newly created todo
   urlParams.push('reveal=true');
 
+  // Add authentication token
+  urlParams.push(`auth-token=${AUTH_TOKEN}`);
+
   const url = `things:///add?${urlParams.join('&')}`;
 
   await executeThingsUrl(url);
@@ -141,6 +147,9 @@ export async function updateTodo(params: UpdateTodoInput): Promise<string> {
   // Reveal the updated todo
   urlParams.push('reveal=true');
 
+  // Add authentication token
+  urlParams.push(`auth-token=${AUTH_TOKEN}`);
+
   const url = `things:///update?${urlParams.join('&')}`;
 
   await executeThingsUrl(url);
@@ -150,7 +159,7 @@ export async function updateTodo(params: UpdateTodoInput): Promise<string> {
 
 // Complete a todo
 export async function completeTodo(taskId: string): Promise<string> {
-  const url = `things:///update?id=${encodeParam(taskId)}&completed=true`;
+  const url = `things:///update?id=${encodeParam(taskId)}&completed=true&auth-token=${AUTH_TOKEN}`;
 
   await executeThingsUrl(url);
 
@@ -159,7 +168,7 @@ export async function completeTodo(taskId: string): Promise<string> {
 
 // Show a todo in Things3
 export async function showTodo(taskId: string): Promise<string> {
-  const url = `things:///show?id=${encodeParam(taskId)}`;
+  const url = `things:///show?id=${encodeParam(taskId)}&auth-token=${AUTH_TOKEN}`;
 
   await executeThingsUrl(url);
 
@@ -168,7 +177,7 @@ export async function showTodo(taskId: string): Promise<string> {
 
 // Search in Things3 (opens Things3 with search)
 export async function searchInThings(query: string): Promise<string> {
-  const url = `things:///search?query=${encodeParam(query)}`;
+  const url = `things:///search?query=${encodeParam(query)}&auth-token=${AUTH_TOKEN}`;
 
   await executeThingsUrl(url);
 

@@ -32,6 +32,7 @@ export async function handleListTodos(params: ListTodosInput): Promise<string> {
     notes: task.notes,
     status: task.status === 0 ? 'incomplete' : task.status === 3 ? 'completed' : 'canceled',
     dueDate: task.dueDate ? new Date(task.dueDate * 1000).toISOString().split('T')[0] : null,
+    startDate: task.startDate ? new Date(task.startDate * 1000).toISOString().split('T')[0] : null,
     project: task.projectTitle,
     area: task.areaTitle,
     tags: task.tags

@@ -172,6 +172,7 @@ export function getTasksByFilter(filter: string, includeCompleted: boolean = fal
   const db = getDatabase();
 
   let whereClause = `t.trashed = 0 AND t.type = ${TaskType.TODO}`;
+  let whereParams: Array<number> = [];
 
   if (!includeCompleted) {
     whereClause += ` AND t.status = ${TaskStatus.INCOMPLETE}`;
@@ -179,19 +180,38 @@ export function getTasksByFilter(filter: string, includeCompleted: boolean = fal
 
   switch (filter) {
     case 'today':
-      whereClause += ` AND (t.todayIndex IS NOT NULL OR t.startDate IS NOT NULL)`;
+      // Tasks in Today are identified by todayIndexReferenceDate matching today's date
+      // Things3 appears to use a calendar offset of 33 days in its date encoding
+      const now = new Date();
+      const today = new Date(now);
+      today.setHours(0, 0, 0, 0);
+      const year = today.getFullYear();
+      const startOfYear = new Date(year, 0, 1);
+      const dayOfYear = Math.floor((today.getTime() - startOfYear.getTime()) / (1000 * 60 * 60 * 24));
+      const todayBaseValue = (year << 16) | (dayOfYear * 128);
+
+      // Add Things3's 33-day offset (empirically determined)
+      const things3Offset = 33 * 128;
+      const todayValue = todayBaseValue + things3Offset;
+
+      // Check for tasks with todayIndexReferenceDate matching today (or yesterday for carryover)
+      const yesterdayValue = todayValue - 128;
+      whereClause += ` AND t.todayIndexReferenceDate IS NOT NULL AND t.todayIndexReferenceDate >= ${yesterdayValue} AND t.todayIndexReferenceDate <= ${todayValue}`;
       break;
     case 'upcoming':
+      // Tasks scheduled for specific dates
       whereClause += ` AND t.startDate IS NOT NULL`;
       break;
     case 'inbox':
       whereClause += ` AND t.area IS NULL AND t.project IS NULL`;
       break;
     case 'anytime':
-      whereClause += ` AND t.todayIndex IS NULL AND t.startDate IS NULL`;
+      // Tasks in Anytime: have start = 1
+      whereClause += ` AND t.start = 1`;
       break;
     case 'someday':
-      whereClause += ` AND t.status = ${TaskStatus.INCOMPLETE} AND t.area = (SELECT uuid FROM TMArea WHERE title = 'Someday')`;
+      // Tasks in Someday: have start = 2
+      whereClause += ` AND t.start = 2`;
       break;
   }
 
@@ -219,7 +239,8 @@ export function getTasksByFilter(filter: string, includeCompleted: boolean = fal
     ORDER BY t.todayIndex, t.creationDate DESC
   `;
 
-  const rows = db.prepare(query).all() as any[];
+  const stmt = db.prepare(query);
+  const rows = whereParams.length > 0 ? (stmt.all(...whereParams) as any[]) : (stmt.all() as any[]);
   return rows.map(rowToTask);
 }
 
@@ -415,6 +436,56 @@ export function findTagByName(name: string): Things3Tag | null {
     uuid: row.uuid,
     title: row.title
   };
+}
+
+// Get tasks for a specific date
+export function getTasksForDate(date: Date, includeCompleted: boolean = false): Things3Task[] {
+  const db = getDatabase();
+  const startOfDay = new Date(date);
+  startOfDay.setHours(0, 0, 0, 0);
+  const nextDay = new Date(startOfDay);
+  nextDay.setDate(nextDay.getDate() + 1);
+
+  const startValue = dateToThings3Format(startOfDay);
+  const endValue = dateToThings3Format(nextDay);
+
+  let statusClause = '';
+  if (!includeCompleted) {
+    statusClause = ` AND t.status = ${TaskStatus.INCOMPLETE}`;
+  }
+
+  const query = `
+    SELECT
+      t.uuid,
+      t.title,
+      t.notes,
+      t.status,
+      t.type,
+      t.creationDate,
+      t.userModificationDate,
+      t.deadline,
+      t.startDate,
+      t.stopDate,
+      t.todayIndex,
+      t.area,
+      a.title as areaTitle,
+      t.project,
+      p.title as projectTitle
+    FROM TMTask t
+    LEFT JOIN TMArea a ON t.area = a.uuid
+    LEFT JOIN TMTask p ON t.project = p.uuid
+    WHERE t.trashed = 0
+      AND t.type = ${TaskType.TODO}
+      ${statusClause}
+      AND (
+        (t.startDate >= ? AND t.startDate < ?)
+        OR (t.todayIndexReferenceDate >= ? AND t.todayIndexReferenceDate < ?)
+      )
+    ORDER BY t.todayIndex, t.startDate, t.creationDate DESC
+  `;
+
+  const rows = db.prepare(query).all(startValue, endValue, startValue, endValue) as any[];
+  return rows.map(rowToTask);
 }
 
 // Get tasks for tomorrow
