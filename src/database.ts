@@ -87,7 +87,10 @@ function dateToThings3Format(date: Date): number {
   const year = date.getFullYear();
   const startOfYear = new Date(date.getFullYear(), 0, 1);
   const dayOfYear = Math.floor((date.getTime() - startOfYear.getTime()) / (1000 * 60 * 60 * 24));
-  return (year << 16) | (dayOfYear * 128);
+  const baseValue = (year << 16) | (dayOfYear * 128);
+  // Things3 uses a 33-day offset in its date encoding
+  const things3Offset = 33 * 128; // 4224
+  return baseValue + things3Offset;
 }
 
 // Helper to get tags for a task
